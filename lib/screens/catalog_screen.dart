@@ -47,6 +47,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     });
     try {
       final games = await _api.fetchGames(0);
+      if (!mounted) return;
       setState(() {
         _games = games;
         _page = 1;
@@ -54,6 +55,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Falha ao carregar jogos. Verifique sua conexão.';
         _loading = false;
@@ -66,6 +68,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     setState(() => _loadingMore = true);
     try {
       final more = await _api.fetchGames(_page);
+      if (!mounted) return;
       setState(() {
         _games.addAll(more);
         _page++;
@@ -73,6 +76,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         _loadingMore = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _loadingMore = false;
         _error = 'Falha ao carregar mais jogos.';
@@ -271,7 +275,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.15),
+                  color: Colors.red.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.red.shade700),
                 ),

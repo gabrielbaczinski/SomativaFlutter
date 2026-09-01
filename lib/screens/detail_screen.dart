@@ -5,6 +5,7 @@ import '../models/game_detail.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/played_provider.dart';
 import '../services/api_service.dart';
+import '../utils/image_helper.dart';
 
 class DetailScreen extends StatefulWidget {
   final Game game;
@@ -34,11 +35,13 @@ class _DetailScreenState extends State<DetailScreen> {
     });
     try {
       final detail = await _api.fetchGameDetail(widget.game.id);
+      if (!mounted) return;
       setState(() {
         _detail = detail;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Falha ao carregar detalhes. Verifique sua conexão.';
         _loading = false;
@@ -167,7 +170,7 @@ class _HeroImage extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.network(
-            game.thumbnail,
+            proxyImage(game.thumbnail),
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => _placeholder(),
           ),
@@ -178,7 +181,7 @@ class _HeroImage extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  const Color(0xff16213e).withOpacity(0.9),
+                  const Color(0xff16213e).withValues(alpha: 0.9),
                 ],
               ),
             ),
@@ -254,8 +257,8 @@ class _DetailBody extends StatelessWidget {
               _chip(
                 detail.status,
                 detail.status.toLowerCase() == 'live'
-                    ? Colors.green.withOpacity(0.25)
-                    : Colors.grey.withOpacity(0.2),
+                    ? Colors.green.withValues(alpha: 0.25)
+                    : Colors.grey.withValues(alpha: 0.2),
                 textColor: detail.status.toLowerCase() == 'live'
                     ? Colors.greenAccent
                     : Colors.grey,
@@ -309,7 +312,7 @@ class _DetailBody extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.network(
-                      detail.screenshots[i].image,
+                      proxyImage(detail.screenshots[i].image),
                       width: 290,
                       height: 175,
                       fit: BoxFit.cover,

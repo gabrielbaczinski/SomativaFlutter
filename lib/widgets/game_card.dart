@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/game.dart';
+import '../utils/image_helper.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
@@ -24,7 +25,7 @@ class GameCard extends StatelessWidget {
               Expanded(
                 child: game.thumbnail.isNotEmpty
                     ? Image.network(
-                        game.thumbnail,
+                        proxyImage(game.thumbnail),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => _placeholder(),
                         loadingBuilder: (_, child, progress) {
