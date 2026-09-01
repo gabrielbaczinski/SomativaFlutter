@@ -5,7 +5,7 @@ import '../models/game_detail.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/played_provider.dart';
 import '../services/api_service.dart';
-import '../utils/image_helper.dart';
+import '../widgets/platform_image.dart';
 
 class DetailScreen extends StatefulWidget {
   final Game game;
@@ -169,10 +169,10 @@ class _HeroImage extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            proxyImage(game.thumbnail),
+          PlatformImage(
+            url: game.thumbnail,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _placeholder(),
+            placeholder: _placeholder,
           ),
           Container(
             decoration: BoxDecoration(
@@ -309,18 +309,18 @@ class _DetailBody extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 10),
                 child: Semantics(
                   label: 'Screenshot ${i + 1} do jogo ${detail.title}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      proxyImage(detail.screenshots[i].image),
-                      width: 290,
-                      height: 175,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 290,
-                        color: const Color(0xff16213e),
-                        child: const Icon(Icons.broken_image,
-                            color: Colors.white24, size: 40),
+                  child: SizedBox(
+                    width: 290,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: PlatformImage(
+                        url: detail.screenshots[i].image,
+                        fit: BoxFit.cover,
+                        placeholder: () => Container(
+                          color: const Color(0xff16213e),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.white24, size: 40),
+                        ),
                       ),
                     ),
                   ),

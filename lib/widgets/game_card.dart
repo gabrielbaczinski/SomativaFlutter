@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/game.dart';
-import '../utils/image_helper.dart';
+import 'platform_image.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
@@ -23,17 +23,11 @@ class GameCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: game.thumbnail.isNotEmpty
-                    ? Image.network(
-                        proxyImage(game.thumbnail),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
-                        loadingBuilder: (_, child, progress) {
-                          if (progress == null) return child;
-                          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-                        },
-                      )
-                    : _placeholder(),
+                child: PlatformImage(
+                  url: game.thumbnail,
+                  fit: BoxFit.cover,
+                  placeholder: _placeholder,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
