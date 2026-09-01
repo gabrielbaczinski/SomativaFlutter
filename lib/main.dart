@@ -28,13 +28,28 @@ class GameVaultApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xffe94560),
             brightness: Brightness.dark,
+            surface: const Color(0xff1a1a2e),
           ),
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xff1a1a2e),
+          scaffoldBackgroundColor: const Color(0xff0d0d1a),
+          fontFamily: 'Roboto',
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xff16213e),
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             elevation: 0,
+            scrolledUnderElevation: 0,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xffe94560),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              elevation: 4,
+              shadowColor: const Color(0xffe94560).withValues(alpha: 0.4),
+            ),
           ),
         ),
         home: const _AppStartup(),
@@ -72,13 +87,17 @@ class _AppStartupState extends State<_AppStartup> {
   Widget build(BuildContext context) {
     if (!_ready) {
       return const Scaffold(
+        backgroundColor: Color(0xff0d0d1a),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.sports_esports, size: 64, color: Color(0xffe94560)),
-              SizedBox(height: 24),
-              CircularProgressIndicator(color: Color(0xffe94560)),
+              Icon(Icons.sports_esports, size: 72, color: Color(0xffe94560)),
+              SizedBox(height: 28),
+              CircularProgressIndicator(
+                color: Color(0xffe94560),
+                strokeWidth: 2.5,
+              ),
             ],
           ),
         ),
