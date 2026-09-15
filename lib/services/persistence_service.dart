@@ -1,29 +1,40 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/game.dart';
+import '../models/pokemon.dart';
 
 class PersistenceService {
-  static const _favoritesKey = 'favorites_v1';
-  static const _playedKey = 'played_v1';
+  static const String _favoritesKey = 'favorites_v4';
+  static const String _watchedKey = 'watched_v4';
 
-  Future<List<Game>> loadFavorites() => _load(_favoritesKey);
-  Future<List<Game>> loadPlayed() => _load(_playedKey);
-  Future<void> saveFavorites(List<Game> games) => _save(_favoritesKey, games);
-  Future<void> savePlayed(List<Game> games) => _save(_playedKey, games);
-
-  Future<List<Game>> _load(String key) async {
+  Future<List<Pokemon>> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(key);
-    if (raw == null || raw.isEmpty) return [];
-    final list = json.decode(raw) as List<dynamic>;
-    return list.map((e) => Game.fromJson(e as Map<String, dynamic>)).toList();
+    final json = prefs.getString(_favoritesKey);
+    if (json == null) return [];
+    final List<dynamic> list = jsonDecode(json);
+    return list
+        .map((j) => Pokemon.fromJson(j as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<void> _save(String key, List<Game> games) async {
+  Future<void> saveFavorites(List<Pokemon> pokemons) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      key,
-      json.encode(games.map((g) => g.toJson()).toList()),
-    );
+        _favoritesKey, jsonEncode(pokemons.map((p) => p.toJson()).toList()));
+  }
+
+  Future<List<Pokemon>> loadWatched() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString(_watchedKey);
+    if (json == null) return [];
+    final List<dynamic> list = jsonDecode(json);
+    return list
+        .map((j) => Pokemon.fromJson(j as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> saveWatched(List<Pokemon> pokemons) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        _watchedKey, jsonEncode(pokemons.map((p) => p.toJson()).toList()));
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/favorites_provider.dart';
@@ -7,11 +7,11 @@ import 'screens/login_screen.dart';
 import 'screens/catalog_screen.dart';
 
 void main() {
-  runApp(const GameVaultApp());
+  runApp(const PokedexApp());
 }
 
-class GameVaultApp extends StatelessWidget {
-  const GameVaultApp({super.key});
+class PokedexApp extends StatelessWidget {
+  const PokedexApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,37 +22,111 @@ class GameVaultApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PlayedProvider()),
       ],
       child: MaterialApp(
-        title: 'GameVault',
+        title: 'Pokédex',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xffe94560),
-            brightness: Brightness.dark,
-            surface: const Color(0xff1a1a2e),
-          ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xff0d0d1a),
-          fontFamily: 'Roboto',
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xffe94560),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              elevation: 4,
-              shadowColor: const Color(0xffe94560).withValues(alpha: 0.4),
-            ),
-          ),
-        ),
+        theme: _buildTheme(),
         home: const _AppStartup(),
+      ),
+    );
+  }
+
+  ThemeData _buildTheme() {
+    const Color primaryPink = Color(0xFFFF8FAB);
+    const Color mintGreen = Color(0xFF97C8A0);
+    const Color softLavender = Color(0xFFB8A9D9);
+    const Color creamBg = Color(0xFFFFF0F5);
+    const Color surfaceWhite = Color(0xFFFFFFFF);
+    const Color deepText = Color(0xFF4A3F55);
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryPink,
+        brightness: Brightness.light,
+      ).copyWith(
+        primary: primaryPink,
+        secondary: mintGreen,
+        tertiary: softLavender,
+        surface: surfaceWhite,
+        surfaceContainerHighest: creamBg,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: deepText,
+      ),
+      scaffoldBackgroundColor: creamBg,
+      textTheme: const TextTheme().copyWith(
+        displayLarge: TextStyle(
+            fontSize: 32, fontWeight: FontWeight.w800, color: deepText),
+        headlineMedium: TextStyle(
+            fontSize: 22, fontWeight: FontWeight.w700, color: deepText),
+        titleLarge: TextStyle(
+            fontSize: 18, fontWeight: FontWeight.w700, color: deepText),
+        titleMedium: TextStyle(
+            fontSize: 16, fontWeight: FontWeight.w600, color: deepText),
+        bodyLarge: TextStyle(fontSize: 15, color: deepText),
+        bodyMedium: TextStyle(
+            fontSize: 14, color: deepText.withValues(alpha: 0.75)),
+        labelLarge: TextStyle(
+            fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: deepText,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: deepText,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryPink,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          elevation: 2,
+          shadowColor: primaryPink.withValues(alpha: 0.35),
+          textStyle:
+              TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: primaryPink.withValues(alpha: 0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: primaryPink.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryPink, width: 2),
+        ),
+        labelStyle: TextStyle(color: const Color(0xFF9E91B8)),
+        hintStyle: TextStyle(
+            color: const Color(0xFF9E91B8).withValues(alpha: 0.7)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      ),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 3,
+        shadowColor: primaryPink.withValues(alpha: 0.18),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        margin: const EdgeInsets.all(0),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: creamBg,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -86,16 +160,29 @@ class _AppStartupState extends State<_AppStartup> {
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      return const Scaffold(
-        backgroundColor: Color(0xff0d0d1a),
+      return Scaffold(
+        backgroundColor: const Color(0xFFFFF0F5),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.sports_esports, size: 72, color: Color(0xffe94560)),
-              SizedBox(height: 28),
-              CircularProgressIndicator(
-                color: Color(0xffe94560),
+              const Icon(
+                Icons.movie_filter_rounded,
+                size: 64,
+                color: Color(0xFFFF8FAB),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pokédex',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF4A3F55),
+                ),
+              ),
+              const SizedBox(height: 28),
+              const CircularProgressIndicator(
+                color: Color(0xFFFF8FAB),
                 strokeWidth: 2.5,
               ),
             ],

@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
-import '../models/game.dart';
+import 'package:flutter/foundation.dart';
+import '../models/pokemon.dart';
 import '../services/persistence_service.dart';
 
 class FavoritesProvider extends ChangeNotifier {
-  final _persistence = PersistenceService();
-  List<Game> _favorites = [];
+  final PersistenceService _persistence = PersistenceService();
+  List<Pokemon> _favorites = [];
 
-  List<Game> get favorites => List.unmodifiable(_favorites);
+  List<Pokemon> get favorites => List.unmodifiable(_favorites);
 
   Future<void> load() async {
     _favorites = await _persistence.loadFavorites();
     notifyListeners();
   }
 
-  bool isFavorite(int id) => _favorites.any((g) => g.id == id);
+  bool isFavorite(String id) => _favorites.any((p) => p.id == id);
 
-  Future<void> toggle(Game game) async {
-    if (isFavorite(game.id)) {
-      _favorites.removeWhere((g) => g.id == game.id);
+  Future<void> toggle(Pokemon pokemon) async {
+    if (isFavorite(pokemon.id)) {
+      _favorites.removeWhere((p) => p.id == pokemon.id);
     } else {
-      _favorites.add(game);
+      _favorites.add(pokemon);
     }
     await _persistence.saveFavorites(_favorites);
     notifyListeners();

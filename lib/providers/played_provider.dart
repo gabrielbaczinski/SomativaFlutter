@@ -1,27 +1,27 @@
-import 'package:flutter/material.dart';
-import '../models/game.dart';
+import 'package:flutter/foundation.dart';
+import '../models/pokemon.dart';
 import '../services/persistence_service.dart';
 
 class PlayedProvider extends ChangeNotifier {
-  final _persistence = PersistenceService();
-  List<Game> _played = [];
+  final PersistenceService _persistence = PersistenceService();
+  List<Pokemon> _watched = [];
 
-  List<Game> get played => List.unmodifiable(_played);
+  List<Pokemon> get watched => List.unmodifiable(_watched);
 
   Future<void> load() async {
-    _played = await _persistence.loadPlayed();
+    _watched = await _persistence.loadWatched();
     notifyListeners();
   }
 
-  bool isPlayed(int id) => _played.any((g) => g.id == id);
+  bool isWatched(String id) => _watched.any((p) => p.id == id);
 
-  Future<void> toggle(Game game) async {
-    if (isPlayed(game.id)) {
-      _played.removeWhere((g) => g.id == game.id);
+  Future<void> toggle(Pokemon pokemon) async {
+    if (isWatched(pokemon.id)) {
+      _watched.removeWhere((p) => p.id == pokemon.id);
     } else {
-      _played.add(game);
+      _watched.add(pokemon);
     }
-    await _persistence.savePlayed(_played);
+    await _persistence.saveWatched(_watched);
     notifyListeners();
   }
 }
