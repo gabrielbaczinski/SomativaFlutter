@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/pokemon.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/played_provider.dart';
 import '../services/poke_api_service.dart';
+import '../utils/page_transitions.dart';
+import '../utils/pokemon_types.dart';
 import '../widgets/platform_image.dart';
+import '../widgets/tap_scale.dart';
 
 class DetailScreen extends StatefulWidget {
   final Pokemon pokemon;
@@ -15,15 +19,37 @@ class DetailScreen extends StatefulWidget {
   State<DetailScreen> createState() => _DetailScreenState();
 }
 
-class _DetailScreenState extends State<DetailScreen> {
+class _DetailScreenState extends State<DetailScreen>
+    with SingleTickerProviderStateMixin {
   final _api = PokeApiService();
   Pokemon? _detail;
   bool _loadingDetail = true;
+  List<Pokemon> _evolutionChain = [];
+  bool _loadingEvolution = true;
+
+  late final AnimationController _entrance;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
 
   @override
   void initState() {
     super.initState();
+    _entrance = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    _fade = CurvedAnimation(parent: _entrance, curve: Curves.easeOut);
+    _slide = Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic));
+    _entrance.forward();
     _fetchDetail();
+    _fetchEvolution();
+  }
+
+  @override
+  void dispose() {
+    _entrance.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchDetail() async {
@@ -35,6 +61,18 @@ class _DetailScreenState extends State<DetailScreen> {
       // usa os dados básicos se o detalhe falhar
     } finally {
       if (mounted) setState(() => _loadingDetail = false);
+    }
+  }
+
+  Future<void> _fetchEvolution() async {
+    try {
+      final chain = await _api.fetchEvolutionChain(widget.pokemon.id);
+      if (!mounted) return;
+      setState(() => _evolutionChain = chain);
+    } catch (_) {
+      // sem cadeia de evolução disponível — seção fica oculta
+    } finally {
+      if (mounted) setState(() => _loadingEvolution = false);
     }
   }
 
@@ -55,7 +93,7 @@ class _DetailScreenState extends State<DetailScreen> {
             leading: Semantics(
               label: 'Voltar para o catálogo',
               button: true,
-              child: GestureDetector(
+              child: TapScale(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
                   margin: const EdgeInsets.all(8),
@@ -80,134 +118,246 @@ class _DetailScreenState extends State<DetailScreen> {
                 color: const Color(0xFFFFF0F5),
                 child: Semantics(
                   label: 'Imagem de ${pokemon.name}',
-                  child: PlatformImage(url: pokemon.image, fit: BoxFit.contain),
+                  child: Hero(
+                    tag: 'pokemon_${widget.pokemon.id}',
+                    child: PlatformImage(url: pokemon.image, fit: BoxFit.contain),
+                  ),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            child: FadeTransition(
+              opacity: _fade,
+              child: SlideTransition(
+                position: _slide,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              pokemon.name,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF4A3F55),
-                              ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  pokemon.name,
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF4A3F55),
+                                  ),
+                                ),
+                                Text(
+                                  pokemon.number,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF7A6D93),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              pokemon.number,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF9E91B8),
-                                fontWeight: FontWeight.w600,
-                              ),
+                          ),
+                          if (_loadingDetail)
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  color: Color(0xFFFF8FAB), strokeWidth: 2),
                             ),
-                          ],
-                        ),
+                        ],
                       ),
-                      if (_loadingDetail)
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              color: Color(0xFFFF8FAB), strokeWidth: 2),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (pokemon.types.isNotEmpty)
+                            ...pokemon.types.split(', ').map(
+                                  (t) => _TypeChip(type: t),
+                                ),
+                          if (pokemon.height.isNotEmpty)
+                            _InfoChip(
+                              icon: Icons.height_rounded,
+                              label: pokemon.height,
+                              color: const Color(0xFF97C8A0),
+                            ),
+                          if (pokemon.weight.isNotEmpty)
+                            _InfoChip(
+                              icon: Icons.monitor_weight_outlined,
+                              label: pokemon.weight,
+                              color: const Color(0xFFB8A9D9),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // RF04 / RF07 — botões de favoritar e capturar com Semantics (RF10)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Semantics(
+                              label: isFav
+                                  ? 'Remover ${pokemon.name} dos favoritos'
+                                  : 'Adicionar ${pokemon.name} aos favoritos',
+                              button: true,
+                              child: _ActionButton(
+                                icon: isFav
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                label: isFav ? 'Nos Favoritos' : 'Favoritar',
+                                color: const Color(0xFFFF8FAB),
+                                active: isFav,
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  context.read<FavoritesProvider>().toggle(pokemon);
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Semantics(
+                              label: isWatched
+                                  ? '${pokemon.name} já capturado'
+                                  : 'Marcar ${pokemon.name} como capturado',
+                              button: true,
+                              child: _ActionButton(
+                                icon: isWatched
+                                    ? Icons.catching_pokemon_rounded
+                                    : Icons.catching_pokemon_outlined,
+                                label: isWatched ? 'Capturado' : 'Capturar',
+                                color: const Color(0xFF97C8A0),
+                                active: isWatched,
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  context.read<PlayedProvider>().toggle(pokemon);
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      const _SectionTitle('Detalhes'),
+                      const SizedBox(height: 8),
+                      _DetailRow('Número', pokemon.number),
                       if (pokemon.types.isNotEmpty)
-                        ...pokemon.types.split(', ').map(
-                              (t) => _TypeChip(type: t),
-                            ),
+                        _DetailRow('Tipo', pokemon.types),
                       if (pokemon.height.isNotEmpty)
-                        _InfoChip(
-                          icon: Icons.height_rounded,
-                          label: pokemon.height,
-                          color: const Color(0xFF97C8A0),
-                        ),
+                        _DetailRow('Altura', pokemon.height),
                       if (pokemon.weight.isNotEmpty)
-                        _InfoChip(
-                          icon: Icons.monitor_weight_outlined,
-                          label: pokemon.weight,
-                          color: const Color(0xFFB8A9D9),
-                        ),
+                        _DetailRow('Peso', pokemon.weight),
+                      if (pokemon.stats.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        const _SectionTitle('Estatísticas Base'),
+                        const SizedBox(height: 12),
+                        ...pokemon.stats.map((s) => _StatBar(
+                              label: s.label,
+                              value: s.value,
+                              color: pokemon.types.isNotEmpty
+                                  ? pokemonTypeColor(
+                                      pokemon.types.split(', ').first)
+                                  : const Color(0xFFFF8FAB),
+                            )),
+                      ],
+                      if (_loadingEvolution || _evolutionChain.length > 1) ...[
+                        const SizedBox(height: 24),
+                        const _SectionTitle('Linha de Evolução'),
+                        const SizedBox(height: 12),
+                        _buildEvolutionRow(),
+                      ],
+                      const SizedBox(height: 24),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // RF04 / RF07 — botões de favoritar e capturar com Semantics (RF10)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Semantics(
-                          label: isFav
-                              ? 'Remover ${pokemon.name} dos favoritos'
-                              : 'Adicionar ${pokemon.name} aos favoritos',
-                          button: true,
-                          child: _ActionButton(
-                            icon: isFav
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            label: isFav ? 'Nos Favoritos' : 'Favoritar',
-                            color: const Color(0xFFFF8FAB),
-                            active: isFav,
-                            onTap: () => context
-                                .read<FavoritesProvider>()
-                                .toggle(pokemon),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Semantics(
-                          label: isWatched
-                              ? '${pokemon.name} já capturado'
-                              : 'Marcar ${pokemon.name} como capturado',
-                          button: true,
-                          child: _ActionButton(
-                            icon: isWatched
-                                ? Icons.catching_pokemon_rounded
-                                : Icons.catching_pokemon_outlined,
-                            label: isWatched ? 'Capturado' : 'Capturar',
-                            color: const Color(0xFF97C8A0),
-                            active: isWatched,
-                            onTap: () =>
-                                context.read<PlayedProvider>().toggle(pokemon),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  const _SectionTitle('Detalhes'),
-                  const SizedBox(height: 8),
-                  _DetailRow('Número', pokemon.number),
-                  if (pokemon.types.isNotEmpty)
-                    _DetailRow('Tipo', pokemon.types),
-                  if (pokemon.height.isNotEmpty)
-                    _DetailRow('Altura', pokemon.height),
-                  if (pokemon.weight.isNotEmpty)
-                    _DetailRow('Peso', pokemon.weight),
-                  const SizedBox(height: 24),
-                ],
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEvolutionRow() {
+    if (_loadingEvolution) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+                color: Color(0xFFFF8FAB), strokeWidth: 2.5),
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 104,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _evolutionChain.length,
+        separatorBuilder: (_, __) => const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Icon(Icons.arrow_forward_rounded,
+              color: Color(0xFF7A6D93), size: 20),
+        ),
+        itemBuilder: (context, i) {
+          final stage = _evolutionChain[i];
+          final isCurrent = stage.id == widget.pokemon.id;
+          return Semantics(
+            label: isCurrent
+                ? '${stage.name}, estágio atual'
+                : 'Ver detalhes de ${stage.name}',
+            button: !isCurrent,
+            child: TapScale(
+              onTap: isCurrent
+                  ? null
+                  : () => Navigator.of(context)
+                      .push(fadeSlideRoute(DetailScreen(pokemon: stage))),
+              child: SizedBox(
+                width: 76,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF0F5),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isCurrent
+                              ? const Color(0xFFFF8FAB)
+                              : const Color(0xFFFF8FAB).withValues(alpha: 0.25),
+                          width: isCurrent ? 2.5 : 1.5,
+                        ),
+                      ),
+                      child: PlatformImage(url: stage.image, fit: BoxFit.contain),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      stage.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
+                        color: isCurrent
+                            ? const Color(0xFFFF8FAB)
+                            : const Color(0xFF4A3F55),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -217,30 +367,9 @@ class _TypeChip extends StatelessWidget {
   final String type;
   const _TypeChip({required this.type});
 
-  static const _typeColors = {
-    'Fire': Color(0xFFFF8FAB),
-    'Water': Color(0xFF90CAF9),
-    'Grass': Color(0xFF97C8A0),
-    'Electric': Color(0xFFFFD54F),
-    'Psychic': Color(0xFFCE93D8),
-    'Ice': Color(0xFF80DEEA),
-    'Dragon': Color(0xFF7986CB),
-    'Dark': Color(0xFF8D6E63),
-    'Fairy': Color(0xFFF48FB1),
-    'Normal': Color(0xFFBDBDBD),
-    'Fighting': Color(0xFFFF7043),
-    'Flying': Color(0xFFB8A9D9),
-    'Poison': Color(0xFFBA68C8),
-    'Ground': Color(0xFFD7CCC8),
-    'Rock': Color(0xFFA1887F),
-    'Bug': Color(0xFFAED581),
-    'Ghost': Color(0xFF9575CD),
-    'Steel': Color(0xFF90A4AE),
-  };
-
   @override
   Widget build(BuildContext context) {
-    final color = _typeColors[type] ?? const Color(0xFFB8A9D9);
+    final color = pokemonTypeColor(type);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
@@ -313,7 +442,7 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TapScale(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -392,7 +521,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF9E91B8),
+                color: Color(0xFF7A6D93),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -408,6 +537,69 @@ class _DetailRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatBar extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color color;
+
+  const _StatBar({required this.label, required this.value, required this.color});
+
+  static const int _maxStat = 200;
+
+  @override
+  Widget build(BuildContext context) {
+    final fraction = (value / _maxStat).clamp(0.0, 1.0);
+    return Semantics(
+      label: '$label: $value de até $_maxStat',
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 92,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF7A6D93),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 30,
+              child: Text(
+                '$value',
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF4A3F55),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: fraction),
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, animatedValue, _) => LinearProgressIndicator(
+                    value: animatedValue,
+                    minHeight: 10,
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

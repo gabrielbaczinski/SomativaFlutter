@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/pokemon.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/played_provider.dart';
 import '../screens/detail_screen.dart';
+import '../utils/page_transitions.dart';
 import 'platform_image.dart';
+import 'tap_scale.dart';
 
 class PokemonCard extends StatelessWidget {
   final Pokemon pokemon;
 
   const PokemonCard({super.key, required this.pokemon});
+
+  void _openDetail(BuildContext context) {
+    HapticFeedback.selectionClick();
+    Navigator.of(context).push(fadeSlideRoute(DetailScreen(pokemon: pokemon)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +35,8 @@ class PokemonCard extends StatelessWidget {
     return Semantics(
       label: semanticLabel.toString(),
       button: true,
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => DetailScreen(pokemon: pokemon)),
-        ),
+      child: TapScale(
+        onTap: () => _openDetail(context),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -52,12 +58,17 @@ class PokemonCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // RF10 — semanticLabel na imagem
+                      // RF10 — semanticLabel na imagem. RF02 — tocar na
+                      // imagem também abre o detalhe (Hero anima até lá).
                       Semantics(
                         label: 'Imagem de ${pokemon.name}',
-                        child: PlatformImage(
-                          url: pokemon.image,
-                          fit: BoxFit.contain,
+                        child: Hero(
+                          tag: 'pokemon_${pokemon.id}',
+                          child: PlatformImage(
+                            url: pokemon.image,
+                            fit: BoxFit.contain,
+                            onTap: () => _openDetail(context),
+                          ),
                         ),
                       ),
                       Positioned(
@@ -126,7 +137,7 @@ class PokemonCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF9E91B8),
+                          color: Color(0xFF7A6D93),
                           fontWeight: FontWeight.w500,
                         ),
                       ),

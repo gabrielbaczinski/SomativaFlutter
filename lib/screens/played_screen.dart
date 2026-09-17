@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/played_provider.dart';
 import '../widgets/film_card.dart';
+import '../widgets/staggered_fade_in.dart';
 
 class PlayedScreen extends StatelessWidget {
   const PlayedScreen({super.key});
@@ -46,6 +47,7 @@ class PlayedScreen extends StatelessWidget {
           ],
         ),
         leading: IconButton(
+          tooltip: 'Voltar para o catálogo',
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4A3F55)),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -83,7 +85,7 @@ class PlayedScreen extends StatelessWidget {
                       'Marque os pokémons que você já capturou.',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF9E91B8),
+                        color: Color(0xFF7A6D93),
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -101,7 +103,8 @@ class PlayedScreen extends StatelessWidget {
                 childAspectRatio: 0.75,
               ),
               itemCount: watched.length,
-              itemBuilder: (_, i) => PokemonCard(pokemon: watched[i]),
+              itemBuilder: (_, i) => StaggeredFadeIn(
+                  index: i, child: PokemonCard(pokemon: watched[i])),
             ),
     );
   }

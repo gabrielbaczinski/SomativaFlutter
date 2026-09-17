@@ -108,9 +108,9 @@ class PokedexApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primaryPink, width: 2),
         ),
-        labelStyle: TextStyle(color: const Color(0xFF9E91B8)),
+        labelStyle: TextStyle(color: const Color(0xFF7A6D93)),
         hintStyle: TextStyle(
-            color: const Color(0xFF9E91B8).withValues(alpha: 0.7)),
+            color: const Color(0xFF7A6D93).withValues(alpha: 0.7)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
