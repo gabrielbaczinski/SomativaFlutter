@@ -11,32 +11,32 @@
 
 ---
 
-## 💖 Olá, Treinadores! Bem-vindos ao nosso repositório! 
+## ꩜ Olá, Treinadores! Bem-vindos ao nosso repositório! 
 Oi oi! Que bom ter você por aqui. Pegue sua Pokédex, ajeite sua mochila e venha conhecer a **Somativa Flutter**!. 
 
 ---
 
-## 🏕️ O que tem na mochila? (Sobre o Projeto)
+## ꩜ O que tem na mochila? (Sobre o Projeto)
 Este repositório guarda uma aplicação mobile, o objetivo principal aqui é colocar em prática os conhecimentos em **Flutter e Dart**, criando uma interface bonitinha, fluida e super amigável para o usuário.
 
-*(Dica: A magia Pokémon deixa tudo melhor, e tentamos trazer essa energia para a nossa interface e organização!)* 🪄
+*(Dica: A magia Pokémon deixa tudo melhor, e tentamos trazer essa energia para a nossa interface e organização!)* 
 
 ---
 
-## 🛠️ Ferramentas de Batalha (Tecnologias Usadas)
+## ꩜ Ferramentas de Batalha (Tecnologias Usadas)
 Para essa jornada, nossa equipe principal (tecnologias) foi composta por:
 
-- 💙 **Flutter** - Nosso parceiro rápido e ágil para criar a interface!
-- 🎯 **Dart** - A linguagem principal, forte e confiável em qualquer batalha.
-- 🎨 **Design UI** - Cuidando para que tudo ficasse lindo como um tipo Fada.
-- 🌐 **[PokéAPI](https://pokeapi.co/api/v2)** - A nossa verdadeira Pokédex! Consumimos essa API incrível para trazer a magia à vida, utilizando:
+- **Flutter** - Nosso parceiro rápido e ágil para criar a interface!
+- **Dart** - A linguagem principal, forte e confiável em qualquer batalha.
+- **Design UI** - Cuidando para que tudo ficasse lindo como um tipo Fada.
+- **[PokéAPI](https://pokeapi.co/api/v2)** - A nossa verdadeira Pokédex! Consumimos essa API incrível para trazer a magia à vida, utilizando:
   - **Paginação real:** usando os parâmetros `limit` e `offset` para carregar os Pokémon aos poucos (e não pesar a mochila!).
   - **Busca por ID:** através do endpoint de detalhes, para ver os status de um parceiro específico.
   - **Busca exata:** para quando você sabe exatamente o nome do Pokémon que quer capturar!
 
 ---
 
-## 🗺️ Como Iniciar sua Jornada (Como Rodar)
+## ꩜ Como Iniciar sua Jornada (Como Rodar)
 
 Quer testar no seu próprio aparelho ou emulador? É super simples, basta seguir este mapa:
 
@@ -59,7 +59,7 @@ Quer testar no seu próprio aparelho ou emulador? É super simples, basta seguir
 
 ---
 
-## 👥 Dupla de Treinadores (Criadores)
+## ꩜ Dupla de Treinadores (Criadores)
 
 <div align="center">
   <table>
